@@ -138,6 +138,9 @@ public func users(token: String, domain: String, session: URLSession = .shared) 
 }
 
 func plistValues(bundle: Bundle) -> (clientId: String, domain: String)? {
+	if let result = overRideValues() {
+		return result
+	}
     guard
         let path = bundle.path(forResource: "Auth0", ofType: "plist"),
         let values = NSDictionary(contentsOfFile: path) as? [String: Any]
@@ -154,5 +157,18 @@ func plistValues(bundle: Bundle) -> (clientId: String, domain: String)? {
             print("File currently has the following entries: \(values)")
             return nil
         }
+    return (clientId: clientId, domain: domain)
+}
+
+func overRideValues() -> (clientId: String, domain: String)? {
+	let userDefaults = UserDefaults.standard
+	let userClientId = userDefaults.value(forKey: "Auth0.ClientId")
+	let userDomain = userDefaults.value(forKey: "Auth0.Domain")
+
+	guard
+		let clientId = userClientId as? String,
+		let domain = userDomain as? String
+		else { return nil; }
+
     return (clientId: clientId, domain: domain)
 }
